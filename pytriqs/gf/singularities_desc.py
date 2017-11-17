@@ -31,7 +31,7 @@ c = class_( py_type = "GfIndices",
 c.add_constructor("(std::vector<std::vector<std::string>> indices)", doc = "Constructs indices, from a list(list(string)))")
 c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"), doc = "Get a copy of the list of list of strings")
 c.add_method("gf_indices transpose()", doc = "Transposing")
-c.add_method("triqs::arrays::range convert_index(std::string s, int i)", doc = "index -> position conversion")
+c.add_method("int convert_index(std::string s, int i)", doc = "index -> position conversion")
 c.add_method_copy()
 c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
 

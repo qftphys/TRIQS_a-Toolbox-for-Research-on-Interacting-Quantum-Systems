@@ -193,6 +193,9 @@ class Gf(object):
             if self._singularity is None and self._target_rank ==2 and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
                 self._singularity = singularities.TailGf(*self._target_shape)
                 self._singularity.reset(-2)
+            if self._singularity is None and self._target_rank ==0 and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
+                self._singularity = singularities.TailGf_s(self._target_shape)
+                self._singularity.reset(-2)
 
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any INTERNAL exceptions.
@@ -360,19 +363,30 @@ class Gf(object):
         # In all other cases, we are slicing the target space
         else : 
             assert self.target_rank == len(key), "wrong number of arguments. Expected %s, got %s"%(self.target_rank, len(key))
-            # transform the key in a list of slices
+
+            # Assume empty indices (scalar_valued)
+            ind = GfIndices([])
+
+            # String access: transform the key into a list integers
             if all(isinstance(x, str) for x in key):
                 assert self._indices, "Got string indices, but I have no indices to convert them !"
-                key_s = [self._indices.convert_index (s,i) for i,s in enumerate(key)] # convert returns a slice of len 1
-                key = [x.start for x in key_s]
-            if all(isinstance(x, slice) for x in key) : 
-                key_s, key = list(key), [ x.start for x in key]
+                key_lst = [self._indices.convert_index(s,i) for i,s in enumerate(key)] # convert returns a slice of len 1
+
+            # Slicing with ranges -> Adjust indices
+            elif all(isinstance(x, slice) for x in key): 
+                key_lst = list(key)
+                ind = GfIndices([ v[k]  for k,v in zip(key_lst, self._indices.data)])
+
+            # Integer access
+            elif all(isinstance(x, int) for x in key):
+                key_lst = list(key)
+
+            # Invalid Acess
             else:
-                key_s = map(lambda r: slice(r,r+1,1), key) # transform int into slice 
-            # now the key is a list of slices
-            dat = self._data[ self._rank * [slice(0,None)] + key_s ] 
-            ind = GfIndices([ v[k]  for k,v in zip(key_s, self._indices.data)])
-            sing = singularities._make_tail_view_from_data(self._singularity.data[[slice(0,None)] + key_s]) if self._singularity else None # Build a new view of the singularity
+                raise NotImplementedError, "Partial slice of the target space not implemented"
+
+            dat = self._data[ self._rank * [slice(0,None)] + key_lst ] 
+            sing = singularities._make_tail_view_from_data(self._singularity.data[[slice(0,None)] + key_lst]) if self._singularity else None # Build a new view of the singularity
             r = Gf(mesh = self._mesh, data = dat, singularity = sing, indices = ind)
             r.__check_invariants()
             return r
@@ -583,8 +597,13 @@ class Gf(object):
    #----------------------------- other operations -----------------------------------
 
     def invert(self):
+        if self.target_rank==0:
+            self.data[:] = 1. / self.data
+            if self._singularity : self._singularity.invert()
+            return
+
         """Inverts this Gf in place, in a matrix sense"""
-        assert self.target_rank==2, "Inversion only makes sense for matrix valued Gf"
+        assert self.target_rank==2, "Inversion only makes sense for matrix or scalar_valued Gf"
         d = self.data.view() # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
         d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:] # reshaped view, guarantee no copy
         wrapped_aux._gf_invert_data_in_place(d)   
