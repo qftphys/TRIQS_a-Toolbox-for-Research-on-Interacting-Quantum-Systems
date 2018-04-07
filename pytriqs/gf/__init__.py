@@ -42,7 +42,7 @@ from backwd_compat.gf_legendre import *
 
 from meshes import MeshBrillouinZone, MeshCyclicLattice
 
-from gf_fnt import is_gf_real_in_tau
+from gf_fnt import is_gf_real_in_tau, make_gf_from_fourier, make_gf_from_inverse_fourier
 
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions','TailGf',
@@ -59,7 +59,8 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',
-            'delta','dyson','tail_fit',
-            # 'make_gf_from_inverse_fourier',
+            'make_gf_from_fourier',
+            'make_gf_from_inverse_fourier',
+            'delta','dyson','tail_fit'
             # 'rebinning_tau',
           ]
