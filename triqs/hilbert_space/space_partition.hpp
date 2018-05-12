@@ -35,7 +35,7 @@ namespace hilbert_space {
   Partitions a Hilbert space into a set of subspaces invariant under action of a given Hermitian operator (Hamiltonian).
   Optionally modifies the partition so that a given operator generates only one-to-one connections between the subspaces.
   For a detailed description of the algorithm see
-  `Computer Physics Communications 200, March 2016, 274-284 <http://dx.doi.org/10.1016/j.cpc.2015.10.023>`_ (section 4.2).
+  `Computer Physics Communications 200, March 2016, 274-284 <https://doi.org/10.1016/j.cpc.2015.10.023>`_ (section 4.2).
 
   @tparam StateType Many-body state type, must model [[statevector_concept]]
   @tparam OperatorType Imperative operator type, must provide `StateType operator()(StateType const&)`
